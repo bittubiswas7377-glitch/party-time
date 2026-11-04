@@ -1,0 +1,6 @@
+{
+  "name": "PartyMap",
+  "description": "Fun cartoon-style map app showing live parties happening around you with instant public join, private requests, and vibrant party vibes.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
