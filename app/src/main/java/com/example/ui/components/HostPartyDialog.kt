@@ -74,7 +74,7 @@ import java.util.UUID
 fun HostPartyDialog(
   onDismiss: () -> Unit,
   onPartyCreated: (Party) -> Unit,
-  currentPickedLocation: Pair<Float, Float>,
+  currentPickedLocation: Pair<Double, Double>,
   onPickLocationOnMap: () -> Unit,
   modifier: Modifier = Modifier
 ) {
@@ -325,11 +325,12 @@ fun HostPartyDialog(
           horizontalArrangement = Arrangement.SpaceBetween
         ) {
           Column(modifier = Modifier.weight(1f)) {
-            Text("Party Location", fontWeight = FontWeight.Bold, fontSize = 13.sp, color = CartoonBorder)
+            Text("Real-Time GPS Location", fontWeight = FontWeight.Bold, fontSize = 13.sp, color = CartoonBorder)
             Text(
-              text = "Pinned on Cartoon Map (${String.format("%.2f", currentPickedLocation.first)}, ${String.format("%.2f", currentPickedLocation.second)})",
+              text = "Live Coordinates (${String.format(java.util.Locale.US, "%.4f", currentPickedLocation.first)}, ${String.format(java.util.Locale.US, "%.4f", currentPickedLocation.second)})",
               fontSize = 11.sp,
-              color = Color(0xFF64748B)
+              color = PartyPurple,
+              fontWeight = FontWeight.SemiBold
             )
           }
 
@@ -339,7 +340,7 @@ fun HostPartyDialog(
             colors = ButtonDefaults.buttonColors(containerColor = PartyPurpleLight, contentColor = PartyPurple),
             modifier = Modifier.testTag("pick_location_button")
           ) {
-            Text("📍 Reposition Pin", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+            Text("📍 Move Pin", fontSize = 12.sp, fontWeight = FontWeight.Bold)
           }
         }
       }
@@ -453,8 +454,10 @@ fun HostPartyDialog(
             attendeeCount = 1,
             maxGuests = maxGuestsText.toIntOrNull() ?: 50,
             description = description.ifBlank { "Party ho rahi hai! Join the vibe and have a blast with us." },
-            mapX = currentPickedLocation.first,
-            mapY = currentPickedLocation.second,
+            latitude = currentPickedLocation.first,
+            longitude = currentPickedLocation.second,
+            mapX = 0.5f,
+            mapY = 0.5f,
             isJoined = true,
             isHostedByMe = true
           )

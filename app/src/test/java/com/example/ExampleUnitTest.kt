@@ -29,15 +29,21 @@ class ExampleUnitTest {
     assertEquals(PartyType.PUBLIC, party.type)
     assertTrue(party.isLiveNow)
     assertFalse(party.isJoined)
+    assertEquals(19.0596, party.latitude, 0.0001)
+    assertEquals(72.8295, party.longitude, 0.0001)
 
     // Simulate join
     val joinedParty = party.copy(
       isJoined = true,
-      attendeeCount = party.attendeeCount + 1
+      attendeeCount = party.attendeeCount + 1,
+      latitude = 28.6139,
+      longitude = 77.2090
     )
 
     assertTrue(joinedParty.isJoined)
     assertEquals(43, joinedParty.attendeeCount)
+    assertEquals(28.6139, joinedParty.latitude, 0.0001)
+    assertEquals(77.2090, joinedParty.longitude, 0.0001)
   }
 
   @Test

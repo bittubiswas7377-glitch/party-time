@@ -94,6 +94,8 @@ class PartyRepository(context: Context) {
             attendeeCount = obj.optInt("attendeeCount", 1),
             maxGuests = if (obj.has("maxGuests") && !obj.isNull("maxGuests")) obj.getInt("maxGuests") else null,
             description = obj.optString("description", ""),
+            latitude = obj.optDouble("latitude", 19.0596),
+            longitude = obj.optDouble("longitude", 72.8295),
             mapX = obj.optDouble("mapX", 0.5).toFloat(),
             mapY = obj.optDouble("mapY", 0.5).toFloat(),
             isJoined = obj.optBoolean("isJoined", false),
@@ -126,6 +128,8 @@ class PartyRepository(context: Context) {
           put("attendeeCount", p.attendeeCount)
           if (p.maxGuests != null) put("maxGuests", p.maxGuests)
           put("description", p.description)
+          put("latitude", p.latitude)
+          put("longitude", p.longitude)
           put("mapX", p.mapX.toDouble())
           put("mapY", p.mapY.toDouble())
           put("isJoined", p.isJoined)

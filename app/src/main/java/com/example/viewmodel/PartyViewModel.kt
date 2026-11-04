@@ -20,6 +20,9 @@ import kotlinx.coroutines.launch
 
 class PartyViewModel(application: Application) : AndroidViewModel(application) {
   private val repository = PartyRepository(application.applicationContext)
+  val locationHelper = com.example.util.LocationHelper(application.applicationContext)
+
+  val currentLocation: StateFlow<Pair<Double, Double>> = locationHelper.currentLocation
 
   val parties: StateFlow<List<Party>> = repository.parties
     .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
@@ -121,6 +124,15 @@ class PartyViewModel(application: Application) : AndroidViewModel(application) {
 
   fun resetDemoData() {
     repository.resetToDefault()
+  }
+
+  fun refreshLocation(onLocationReceived: ((Double, Double) -> Unit)? = null) {
+    locationHelper.checkPermissionAndFetch()
+    locationHelper.fetchRealTimeLocation(onLocationReceived)
+  }
+
+  suspend fun getAddressForLocation(lat: Double, lng: Double): String {
+    return locationHelper.getAddressFromCoordinates(lat, lng)
   }
 
   fun showMessage(msg: String) {

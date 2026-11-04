@@ -19,11 +19,14 @@
  */
 package com.example
 
+import android.Manifest
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -101,6 +104,27 @@ fun PartyMapApp(partyViewModel: PartyViewModel = viewModel()) {
   val partyChats by partyViewModel.partyChats.collectAsState()
   val cloudflareConfig by partyViewModel.cloudflareConfig.collectAsState()
   val activeChatParty by partyViewModel.activeChatParty.collectAsState()
+  val userLocation by partyViewModel.currentLocation.collectAsState()
+
+  val locationPermissionLauncher = rememberLauncherForActivityResult(
+    contract = ActivityResultContracts.RequestMultiplePermissions()
+  ) { permissions ->
+    val fineGranted = permissions[Manifest.permission.ACCESS_FINE_LOCATION] ?: false
+    val coarseGranted = permissions[Manifest.permission.ACCESS_COARSE_LOCATION] ?: false
+    if (fineGranted || coarseGranted) {
+      partyViewModel.refreshLocation()
+      partyViewModel.showMessage("GPS Location active! 📍")
+    }
+  }
+
+  LaunchedEffect(Unit) {
+    locationPermissionLauncher.launch(
+      arrayOf(
+        Manifest.permission.ACCESS_FINE_LOCATION,
+        Manifest.permission.ACCESS_COARSE_LOCATION
+      )
+    )
+  }
 
   val snackbarHostState = remember { SnackbarHostState() }
   val scope = rememberCoroutineScope()
@@ -277,6 +301,8 @@ fun PartyMapApp(partyViewModel: PartyViewModel = viewModel()) {
         when (tabIndex) {
           0 -> MapScreen(
             parties = parties,
+            userLocation = userLocation,
+            onCenterOnMe = { partyViewModel.refreshLocation() },
             onJoinParty = { id -> partyViewModel.joinParty(id) },
             onRequestJoinParty = { id -> partyViewModel.requestJoinParty(id) },
             onLeaveParty = { id -> partyViewModel.leaveParty(id) },

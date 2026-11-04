@@ -52,6 +52,7 @@ import com.example.model.PartyType
 import com.example.ui.components.CartoonMapView
 import com.example.ui.components.HostPartyDialog
 import com.example.ui.components.PartyBottomSheet
+import com.example.ui.components.RealTimeMapView
 import com.example.ui.theme.CartoonBorder
 import com.example.ui.theme.PartyCyan
 import com.example.ui.theme.PartyGreen
@@ -64,6 +65,8 @@ import com.example.ui.theme.PartyYellow
 @Composable
 fun MapScreen(
   parties: List<Party>,
+  userLocation: Pair<Double, Double> = Pair(19.0596, 72.8295),
+  onCenterOnMe: () -> Unit = {},
   onJoinParty: (String) -> Unit,
   onRequestJoinParty: (String) -> Unit,
   onLeaveParty: (String) -> Unit,
@@ -77,7 +80,8 @@ fun MapScreen(
   var selectedParty by remember { mutableStateOf<Party?>(null) }
   var showHostDialog by remember { mutableStateOf(false) }
   var isPickLocationMode by remember { mutableStateOf(false) }
-  var pickedLocation by remember { mutableStateOf(Pair(0.5f, 0.5f)) }
+  var useRealTimeMap by remember { mutableStateOf(true) }
+  var pickedLocation by remember(userLocation) { mutableStateOf(userLocation) }
 
   // Filter chips list
   val filterChips = listOf("All", "🟢 Public", "🔒 Private", "🔥 Live Now", "Bollywood", "EDM", "Chill", "House Party", "Rooftop")
@@ -104,24 +108,47 @@ fun MapScreen(
   }
 
   Box(modifier = modifier.fillMaxSize()) {
-    // 1. Full-screen Cartoon Map
-    CartoonMapView(
-      parties = filteredParties,
-      selectedParty = selectedParty,
-      onPartySelected = { party ->
-        selectedParty = party
-      },
-      isPickLocationMode = isPickLocationMode,
-      pickedLocation = pickedLocation,
-      onLocationPicked = { x, y ->
-        pickedLocation = Pair(x, y)
-        isPickLocationMode = false
-        showHostDialog = true
-        onShowMessage("Pinned spot on map! 📍")
-      }
-    )
+    // 1. Full-screen Interactive Map (Real-Time Leaflet/CartoDB or 2D Cartoon Canvas)
+    if (useRealTimeMap) {
+      RealTimeMapView(
+        parties = filteredParties,
+        userLocation = userLocation,
+        selectedParty = selectedParty,
+        onPartySelected = { party ->
+          selectedParty = party
+        },
+        isPickLocationMode = isPickLocationMode,
+        pickedLocation = pickedLocation,
+        onLocationPicked = { lat, lng ->
+          pickedLocation = Pair(lat, lng)
+          isPickLocationMode = false
+          showHostDialog = true
+          onShowMessage("Pinned spot on real-time map! 📍")
+        },
+        onCenterOnMe = onCenterOnMe
+      )
+    } else {
+      CartoonMapView(
+        parties = filteredParties,
+        selectedParty = selectedParty,
+        onPartySelected = { party ->
+          selectedParty = party
+        },
+        isPickLocationMode = isPickLocationMode,
+        pickedLocation = Pair(0.5f, 0.5f),
+        onLocationPicked = { x, y ->
+          pickedLocation = Pair(
+            userLocation.first + (y - 0.5) * 0.04,
+            userLocation.second + (x - 0.5) * 0.04
+          )
+          isPickLocationMode = false
+          showHostDialog = true
+          onShowMessage("Pinned spot on map! 📍")
+        }
+      )
+    }
 
-    // 2. Top Bar: Search Bar & Filter Chips
+    // 2. Top Bar: Search Bar, View Mode Toggle & Filter Chips
     Column(
       modifier = Modifier
         .fillMaxWidth()
@@ -161,6 +188,25 @@ fun MapScreen(
             IconButton(onClick = { searchQuery = "" }, modifier = Modifier.size(28.dp)) {
               Icon(Icons.Default.Clear, contentDescription = "Clear", tint = Color.Gray)
             }
+          }
+          Spacer(Modifier.width(4.dp))
+          Surface(
+            shape = RoundedCornerShape(12.dp),
+            color = if (useRealTimeMap) PartyCyan else PartyYellow,
+            modifier = Modifier
+              .clickable {
+                useRealTimeMap = !useRealTimeMap
+                onShowMessage(if (useRealTimeMap) "Switched to Real-Time Street Map! 🌍" else "Switched to Cartoon Canvas Map! 🎨")
+              }
+              .testTag("toggle_map_view_mode")
+          ) {
+            Text(
+              text = if (useRealTimeMap) "🌍 Real" else "🎨 2D",
+              fontSize = 11.sp,
+              fontWeight = FontWeight.Bold,
+              color = CartoonBorder,
+              modifier = Modifier.padding(horizontal = 8.dp, vertical = 5.dp)
+            )
           }
         }
       }

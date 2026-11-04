@@ -19,6 +19,8 @@ data class Party(
   val attendeeCount: Int = 24,
   val maxGuests: Int? = 50,
   val description: String = "Dhoom machale! The ultimate rooftop vibe with live music, drinks & food.",
+  val latitude: Double = 19.0596,
+  val longitude: Double = 72.8295,
   val mapX: Float = 0.5f, // Relative 0.0 to 1.0 on cartoon map
   val mapY: Float = 0.5f,
   val isJoined: Boolean = false,
